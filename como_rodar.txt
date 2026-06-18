@@ -1,0 +1,19 @@
+Para rodar pela interface web, abra o PowerShell nesta pasta:
+
+  cd C:\Users\pedro\Documents\files
+  pip install -r requirements.txt
+  python -m streamlit run streamlit_app.py
+
+  Depois abra o endereço que aparecer no terminal, normalmente:
+
+  http://localhost:8501
+
+  Se a porta 8501 estiver ocupada, o Streamlit pode usar outra. Pelo
+  seu log anterior, ele já chegou a rodar em:
+
+  http://localhost:8503
+
+  Também existe a versão no terminal:
+
+  cd C:\Users\pedro\Documents\files
+  python main.py
