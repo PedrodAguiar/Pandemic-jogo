@@ -7,8 +7,9 @@ Fluxo de cada rodada:
     3. Verifica se o acumulo de noticias ruins gera uma quarentena automatica.
     4. Exibe o menu e aguarda a acao do jogador.
     5. Calcula a evolucao simultanea de todas as celulas.
-    6. Verifica condicoes de vitoria ou derrota antecipada.
-    7. Avanca o contador de rodadas.
+    6. Adiciona os creditos recebidos pela rodada.
+    7. Verifica condicoes de vitoria ou derrota antecipada.
+    8. Avanca o contador de rodadas.
 
 Ao final (por limite de rodadas ou por vitoria/derrota), salva o
 estado final em mundo_final.txt.
@@ -19,7 +20,7 @@ import numpy as np
 from mundo import ler_mundo, salvar_mundo, exibir_mundo, TAMANHO
 from regras import calcular_proxima_geracao
 from eventos import sortear_noticia_do_dia, verificar_e_criar_quarentena_automatica
-from menu import processar_acao_jogador, CREDITOS_INICIAIS
+from menu import processar_acao_jogador, CREDITOS_INICIAIS, CREDITOS_POR_RODADA
 
 CAMINHO_MUNDO_INICIAL = "mundo.txt"
 CAMINHO_MUNDO_FINAL = "mundo_final.txt"
@@ -93,6 +94,8 @@ def executar_jogo():
         creditos = processar_acao_jogador(estado_jogo, creditos)
 
         estado_jogo, eventos_da_rodada = calcular_proxima_geracao(estado_jogo)
+        creditos += CREDITOS_POR_RODADA
+        print(f"\nVoce recebeu {CREDITOS_POR_RODADA} creditos pela rodada.")
 
         if eventos_da_rodada:
             print("\nEventos desta rodada:")

@@ -6,26 +6,35 @@ import numpy as np
 import streamlit as st
 
 import eventos as eventos_mod
+import menu as menu_mod
 import mundo as mundo_mod
+import regras as regras_mod
 
 eventos_mod = importlib.reload(eventos_mod)
+menu_mod = importlib.reload(menu_mod)
 mundo_mod = importlib.reload(mundo_mod)
+regras_mod = importlib.reload(regras_mod)
 
 from main import (
     NUMERO_MINIMO_DE_RODADAS,
     criar_estado_inicial,
     verificar_fim_de_jogo,
 )
-from menu import (
-    CREDITOS_INICIAIS,
-    CUSTO_QUARENTENA,
-    CUSTO_CAMPANHA,
-    CUSTO_PASSAR_TURNO,
-    CUSTO_VACINA,
-    REDUCAO_NOTICIAS_RUINS_CAMPANHA,
-)
 from mundo import TAMANHO, ler_mundo, salvar_mundo
-from regras import calcular_proxima_geracao, criar_area_quarentena, garantir_estado_quarentena
+
+CREDITOS_INICIAIS = menu_mod.CREDITOS_INICIAIS
+CREDITOS_POR_RODADA = menu_mod.CREDITOS_POR_RODADA
+CUSTO_QUARENTENA = menu_mod.CUSTO_QUARENTENA
+CUSTO_CAMPANHA = menu_mod.CUSTO_CAMPANHA
+CUSTO_HOSPITAL = menu_mod.CUSTO_HOSPITAL
+CUSTO_PASSAR_TURNO = menu_mod.CUSTO_PASSAR_TURNO
+CUSTO_VACINA = menu_mod.CUSTO_VACINA
+REDUCAO_NOTICIAS_RUINS_CAMPANHA = menu_mod.REDUCAO_NOTICIAS_RUINS_CAMPANHA
+
+calcular_proxima_geracao = regras_mod.calcular_proxima_geracao
+criar_area_quarentena = regras_mod.criar_area_quarentena
+criar_hospital = regras_mod.criar_hospital
+garantir_estado_quarentena = regras_mod.garantir_estado_quarentena
 
 mundo_mod.ESTADOS_VALIDOS.add("H")
 sortear_noticia_do_dia = eventos_mod.sortear_noticia_do_dia
@@ -67,18 +76,19 @@ SIMBOLOS = {
     "H": {
         "classe": "hospital",
         "rotulo": "Hospital",
-        "descricao": "H Hospital raio 2",
+        "descricao": "H Hospital raio 2, cura 1",
     },
 }
 
 ACOES = {
     "Criar Area de Quarentena": "quarentena",
     "Vacinar Pessoa": "vacina",
+    "Criar Hospital de Campanha": "hospital",
     "Campanha de Conscientizacao": "campanha",
     "Passar Turno sem fazer nada": "passar",
 }
 
-VERSAO_ESTADO_STREAMLIT = 3
+VERSAO_ESTADO_STREAMLIT = 4
 
 
 st.set_page_config(page_title="Pandemic", page_icon="P", layout="wide")
@@ -603,11 +613,17 @@ def renderizar_mundo():
 def renderizar_menu_acoes():
     st.markdown("**Escolha sua acao**")
     st.caption(
-        "Quarentena 3x3: {quarentena} | Vacina: {vacina} | Campanha: {campanha} | Passar: {passar}".format(
+        (
+            "Quarentena 3x3: {quarentena} | Vacina: {vacina} | "
+            "Hospital: {hospital} | Campanha: {campanha} | "
+            "Passar: {passar} | +{creditos_rodada} creditos por rodada"
+        ).format(
             quarentena=CUSTO_QUARENTENA,
             vacina=CUSTO_VACINA,
+            hospital=CUSTO_HOSPITAL,
             campanha=CUSTO_CAMPANHA,
             passar=CUSTO_PASSAR_TURNO,
+            creditos_rodada=CREDITOS_POR_RODADA,
         )
     )
 
@@ -619,7 +635,7 @@ def renderizar_menu_acoes():
     acao = ACOES[acao_label]
 
     linha = coluna = None
-    if acao in ("quarentena", "vacina"):
+    if acao in ("quarentena", "vacina", "hospital"):
         coluna_linha, coluna_coluna = st.columns(2)
         with coluna_linha:
             linha = st.number_input("Linha", min_value=0, max_value=TAMANHO - 1, step=1)
@@ -664,6 +680,16 @@ def aplicar_acao(acao, linha, coluna):
             acao_realizada = True
             mensagens.append(f"Pessoa em ({linha},{coluna}) foi vacinada e agora esta imune.")
 
+    elif acao == "hospital":
+        if creditos < CUSTO_HOSPITAL:
+            mensagens.append("Creditos insuficientes para criar um hospital.")
+        elif not criar_hospital(estado_jogo, linha, coluna):
+            mensagens.append("So e possivel criar hospital em um espaco publico livre.")
+        else:
+            creditos -= CUSTO_HOSPITAL
+            acao_realizada = True
+            mensagens.append(f"Hospital de campanha criado em ({linha},{coluna}).")
+
     elif acao == "campanha":
         if creditos < CUSTO_CAMPANHA:
             mensagens.append(
@@ -698,6 +724,10 @@ def avancar_rodada():
     )
     st.session_state.estado_jogo = estado_jogo
     st.session_state.eventos_rodada = eventos_da_rodada
+    st.session_state.creditos += CREDITOS_POR_RODADA
+    st.session_state.eventos_rodada.append(
+        f"Voce recebeu {CREDITOS_POR_RODADA} creditos pela rodada."
+    )
     st.session_state.mensagem_continuacao = None
 
     condicao_atingida, mensagem_condicao = verificar_fim_de_jogo(

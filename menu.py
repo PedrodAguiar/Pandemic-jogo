@@ -1,17 +1,19 @@
 """
 Modulo responsavel pelo menu de acoes do jogador. A cada rodada, o
 jogador pode gastar creditos para intervir no mundo: criar uma area de
-quarentena, vacinar uma pessoa, fazer uma campanha de
-conscientizacao, ou simplesmente passar o turno.
+quarentena, vacinar uma pessoa, criar um hospital, fazer uma campanha
+de conscientizacao, ou simplesmente passar o turno.
 """
 
 from mundo import TAMANHO
-from regras import criar_area_quarentena
+from regras import criar_area_quarentena, criar_hospital
 
 CREDITOS_INICIAIS = 500
+CREDITOS_POR_RODADA = 100
 
 CUSTO_QUARENTENA = 100
 CUSTO_VACINA = 80
+CUSTO_HOSPITAL = 200
 CUSTO_CAMPANHA = 150
 CUSTO_PASSAR_TURNO = 0
 
@@ -23,8 +25,9 @@ def exibir_menu(creditos):
     print("Escolha sua acao:")
     print(f"  1. Criar Area de Quarentena (Custo: {CUSTO_QUARENTENA})")
     print(f"  2. Vacinar Pessoa (Custo: {CUSTO_VACINA})")
-    print(f"  3. Campanha de Conscientizacao (Custo: {CUSTO_CAMPANHA})")
-    print(f"  4. Passar Turno sem fazer nada (Custo: {CUSTO_PASSAR_TURNO})")
+    print(f"  3. Criar Hospital de Campanha (Custo: {CUSTO_HOSPITAL})")
+    print(f"  4. Campanha de Conscientizacao (Custo: {CUSTO_CAMPANHA})")
+    print(f"  5. Passar Turno sem fazer nada (Custo: {CUSTO_PASSAR_TURNO})")
     print(f"Creditos disponiveis: {creditos}")
 
 
@@ -75,10 +78,14 @@ def processar_acao_jogador(estado_jogo, creditos):
                 estado_jogo, creditos
             )
         elif escolha == "3":
-            creditos_atualizados, acao_realizada = _aplicar_campanha(
+            creditos_atualizados, acao_realizada = _criar_hospital(
                 estado_jogo, creditos
             )
         elif escolha == "4":
+            creditos_atualizados, acao_realizada = _aplicar_campanha(
+                estado_jogo, creditos
+            )
+        elif escolha == "5":
             print("Voce optou por passar o turno.")
             return creditos
         else:
@@ -122,6 +129,22 @@ def _vacinar_pessoa(estado_jogo, creditos):
     print(f"Pessoa em ({linha},{coluna}) foi vacinada e agora esta imune.")
 
     return creditos - CUSTO_VACINA, True
+
+
+def _criar_hospital(estado_jogo, creditos):
+    if creditos < CUSTO_HOSPITAL:
+        print("Creditos insuficientes para criar um hospital.")
+        return creditos, False
+
+    linha, coluna = solicitar_posicao("Onde criar o hospital?")
+
+    if not criar_hospital(estado_jogo, linha, coluna):
+        print("So e possivel criar hospital em um espaco publico livre.")
+        return creditos, False
+
+    print(f"Hospital de campanha criado em ({linha},{coluna}).")
+
+    return creditos - CUSTO_HOSPITAL, True
 
 
 def _aplicar_campanha(estado_jogo, creditos):

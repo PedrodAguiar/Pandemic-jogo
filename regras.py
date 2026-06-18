@@ -30,7 +30,7 @@ SIMBOLO_QUARENTENA = "#"
 SIMBOLO_HOSPITAL = "H"
 
 RAIO_ATENDIMENTO_HOSPITAL = 2
-CAPACIDADE_ATENDIMENTO_HOSPITAL = 3
+CAPACIDADE_ATENDIMENTO_HOSPITAL = 1
 LIMITE_SOBRECARGA_HOSPITAL = 7
 
 
@@ -130,6 +130,26 @@ def criar_area_quarentena(estado_jogo, linha, coluna):
         dias_infectado[area_linha, area_coluna] = 0
 
     return len(posicoes_afetadas)
+
+
+def criar_hospital(estado_jogo, linha, coluna):
+    """
+    Cria um hospital de campanha em uma celula livre.
+
+    Retorna True quando o hospital foi criado, ou False quando a celula
+    escolhida nao esta livre.
+    """
+    matriz = estado_jogo["matriz"]
+
+    if matriz[linha, coluna] != "?":
+        return False
+
+    matriz[linha, coluna] = SIMBOLO_HOSPITAL
+
+    if "dias_infectado" in estado_jogo:
+        estado_jogo["dias_infectado"][linha, coluna] = 0
+
+    return True
 
 
 def contar_vizinhos_por_estado(matriz, linha, coluna, estado):

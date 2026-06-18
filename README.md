@@ -36,10 +36,12 @@ Cada rodada segue este fluxo:
 5. O mundo avanca uma geracao de forma simultanea.
 6. O jogo verifica condicoes de vitoria, derrota ou limite de rodadas.
 
-O jogo usa 500 creditos iniciais. As acoes disponiveis sao:
+O jogo usa 500 creditos iniciais e concede 100 creditos ao fim de cada
+rodada concluida. As acoes disponiveis sao:
 
 - Criar area de quarentena 3x3: custa 100 creditos.
 - Vacinar uma pessoa saudavel: custa 80 creditos.
+- Criar hospital de campanha em um espaco livre: custa 200 creditos.
 - Fazer campanha de conscientizacao: custa 150 creditos.
 - Passar turno: custa 0 creditos.
 
@@ -52,7 +54,7 @@ Regras principais:
 - Se sobreviver, vira imune (`~`); se nao sobreviver, o local vira espaco livre
   (`?`).
 - Uma quarentena dura 3 turnos e depois restaura as celulas afetadas.
-- Hospitais atendem infectados em raio 2, tratam ate 3 pessoas por rodada e
+- Hospitais atendem infectados em raio 2, tratam ate 1 pessoa por rodada e
   podem ser desativados se houver sobrecarga.
 - Tres noticias ruins seguidas criam automaticamente uma area de quarentena
   perto de pessoas infectadas.
